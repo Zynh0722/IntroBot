@@ -1,6 +1,7 @@
 # Sensitive data
 credentials.json
 token.json
+.env
 
 # Node Stuff
 node_modules/

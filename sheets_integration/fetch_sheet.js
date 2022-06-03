@@ -92,8 +92,7 @@ function listMajors(auth) {
 				process.stdout.write('\n');
 				// console.log(`${row[0]}, ${row[4]}`);
 			});
-		}
-		else {
+		} else {
 			console.log('No data found.');
 		}
 

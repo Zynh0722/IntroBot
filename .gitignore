@@ -1,0 +1,6 @@
+# Sensitive data
+credentials.json
+token.json
+
+# Node Stuff
+node_modules/

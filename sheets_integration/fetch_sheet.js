@@ -9,7 +9,7 @@ const util = require('util');
 const { google } = require('googleapis');
 
 // If modifying these scopes, delete token.json.
-const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
+const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
 // time.
@@ -17,13 +17,6 @@ const TOKEN_PATH = 'token.json';
 
 function auth_and_read() {
     // Load client secrets from a local file.
-    // fs.readFile('sheets_integration/credentials.json', (err, content) => {
-    //     if (err) return console.log('Error loading client secret file:', err);
-    //     // Authorize a client with credentials, then call the Google Sheets API.
-    //     console.log(JSON.parse(content));
-    //     authorize(JSON.parse(content), listMajors);
-    // });
-
     return fs.readFile('sheets_integration/credentials.json')
         .then(content => JSON.parse(content))
         .then(credentials => authorize(credentials))
@@ -50,16 +43,8 @@ function authorize(credentials) {
     /* NEW CODE */
     // Check if we have previously stored a token.
     return fs.readFile(TOKEN_PATH)
-        .then(token => set_credentials(oAuth2Client, JSON.parse(token)),
-        ).catch(() => getNewToken(oAuth2Client));
-
-    /* OLD CODE */
-    // Check if we have previously stored a token.
-    // fs.readFile(TOKEN_PATH, (err, token) => {
-    //     if (err) return getNewToken(oAuth2Client, callback);
-    //     oAuth2Client.setCredentials(JSON.parse(token));
-    //     callback(oAuth2Client);
-    // });
+        .then(token => set_credentials(oAuth2Client, JSON.parse(token)))
+        .catch(() => getNewToken(oAuth2Client));
 }
 
 /**
@@ -80,34 +65,18 @@ function getNewToken(oAuth2Client) {
         output: process.stdout,
     });
 
-    const question = util.promisify(readline.question).bind(readline);
+    const question = util.promisify(rl.question).bind(rl);
 
     question()
-        .then(code => {
-            rl.close();
-            return oAuth2Client.getToken(code);
-        }).then(token => {
-            // Store the token to disk for later program executions
+        .tap(() => rl.close())
+        .then(code => oAuth2Client.getToken(code))
+        .tap(token =>
             fs.writeFile(TOKEN_PATH, JSON.stringify(token))
                 .then(() => console.log('Token stored to', TOKEN_PATH))
-                .catch(console.error);
-
-            return set_credentials(oAuth2Client, token);
-        }).catch(err => console.error('Error retrieving access token', err));
-
-    // rl.question('Enter the code from that page here: ', (code) => {
-    //     rl.close();
-    //     oAuth2Client.getToken(code, (err, token) => {
-    //         if (err) return console.error('Error while trying to retrieve access token', err);
-    //         oAuth2Client.setCredentials(token);
-    //         // Store the token to disk for later program executions
-    //         fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-    //             if (err) return console.error(err);
-    //             console.log('Token stored to', TOKEN_PATH);
-    //         });
-    //         callback(oAuth2Client);
-    //     });
-    // });
+                .catch(console.error),
+        )
+        .then(token => set_credentials(oAuth2Client, token))
+        .catch(err => console.error('Error retrieving access token', err));
 }
 
 /**

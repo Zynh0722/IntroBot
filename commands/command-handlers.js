@@ -1,8 +1,12 @@
+const auth_and_read = require('../sheets_integration/fetch_sheet.js');
+
 module.exports.ping = interaction => interaction.reply('Pong!');
 
 module.exports.users = async interaction => {
     const members = await interaction.guild.members.fetch();
     const users = members.map(member => member.user.username);
+
+    auth_and_read();
 
     interaction.reply(
         `Here are the users in this server:\n${users.join('\n')}`,

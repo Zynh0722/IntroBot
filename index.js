@@ -3,8 +3,7 @@ const command_handlers = require('./commands/command-handlers');
 
 require('dotenv').config();
 
-// const sheet = require('./sheets_integration/fetch_sheet');
-
+// Create an instance of a Discord client
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS] });
 
 client.on('interactionCreate', async interaction => {
@@ -18,10 +17,7 @@ client.on('interactionCreate', async interaction => {
 // Run code when client is ready
 client.once('ready', () => {
     console.log('Ready!');
-    // sheet.auth_and_read()
-    //     .then(out => {
-    //         console.log(out);
-    //     });
 });
 
+// Login to Discord with the token from .env
 client.login(process.env.BOT_TOKEN);

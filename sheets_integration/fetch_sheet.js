@@ -6,18 +6,22 @@ const { google } = require('googleapis');
 
 const authorize = require('./auth');
 
-function auth_and_read() {
-    // Load client secrets from a local file.
+function get_token() {
     return fs.readFile('credentials/credentials.json')
         .then(content => JSON.parse(content))
-        .then(credentials => authorize(credentials))
-        .then(auth => listMajors(auth))
-        .catch(err => console.log('Error:', err));
+        .then(credentials => authorize(credentials));
+}
+
+async function auth_and_read() {
+    // Load client secrets from a local file.
+    const credentials = await get_token();
+
+    return listMajors(credentials);
 }
 
 /**
  * Prints the names and majors of students in a sample spreadsheet:
- * @see https://docs.google.com/spreadsheets/d/17JmKV_TeXaaCulegDvaLdOhmBYWPcOJa7uKcV6YOarE/edit
+ * @see https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
  * @param {google.auth.OAuth2} auth The authenticated Google OAuth client.
  */
 function listMajors(auth) {

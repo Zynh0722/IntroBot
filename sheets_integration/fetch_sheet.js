@@ -36,6 +36,14 @@ function authorize(credentials, callback) {
         oAuth2Client.setCredentials(JSON.parse(token));
         callback(oAuth2Client);
     });
+
+    fs.readFile(TOKEN_PATH)
+        .then(token => {
+            oAuth2Client.setCredentials(JSON.parse(token));
+            return oAuth2Client;
+        })
+        .catch(() => getNewToken(oAuth2Client));
+
 }
 
 /**
@@ -76,27 +84,28 @@ function getNewToken(oAuth2Client, callback) {
  */
 function listMajors(auth) {
     const sheets = google.sheets({ version: 'v4', auth });
-    sheets.spreadsheets.values.get({
+    return sheets.spreadsheets.values.get({
         spreadsheetId: process.env.SPREADSHEET_ID,
         range: 'A1:E2',
-    }, (err, res) => {
-        if (err) return console.log('The API returned an error: ' + err);
+    })
+        .then(res => {
+            let out = '';
 
-        const rows = res.data.values;
-        if (rows.length) {
-
-            rows.map((row) => {
-                row.map((col) => {
-                    process.stdout.write(col + ' ');
+            const rows = res.data.values;
+            if (rows.length) {
+                rows.map((row) => {
+                    row.map((col) => {
+                        out += col + ' ';
+                    });
+                    out += '\n';
                 });
-                process.stdout.write('\n');
-                // console.log(`${row[0]}, ${row[4]}`);
-            });
-        } else {
-            console.log('No data found.');
-        }
+            } else {
+                console.log('No data found.');
+            }
 
-    });
+            return out;
+        })
+        .catch(err => console.log('The API returned an error: ' + err));
 }
 
 module.exports.auth_and_read = auth_and_read;

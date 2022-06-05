@@ -4,7 +4,7 @@
   "description": "A simple bot to fetch name/pronoun information and store it via a google sheet",
   "main": "index.js",
   "scripts": {
-    "start": "node .",
+    "start": "nodemon .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy-commands": "node commands/deploy-commands.js"
   },
@@ -19,6 +19,7 @@
     "googleapis": "^100.0.0"
   },
   "devDependencies": {
-    "eslint": "^8.16.0"
+    "eslint": "^8.16.0",
+    "nodemon": "^2.0.16"
   }
 }

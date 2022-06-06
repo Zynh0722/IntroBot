@@ -54,15 +54,17 @@ function getNewToken(oAuth2Client) {
         output: process.stdout,
     });
 
-    const question = () => new Promise((resolve) => {
-        rl.question('Enter the code from that page here: ', code => {
-            resolve(code);
+    function question() {
+        return new Promise((resolve) => {
+            rl.question('Enter the code from that page here: ', code => {
+                resolve(code);
+            });
         });
-    });
+    }
 
     return question()
         .tap(() => rl.close())
-        .tap(code => console.log(code))
+        // .tap(code => console.log(code))
         .then(code => oAuth2Client.getToken({ code }))
         .tap(token =>
             fs.writeFileAsync(TOKEN_PATH, JSON.stringify(token))

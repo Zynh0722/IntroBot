@@ -19,6 +19,11 @@ function load_credentials() {
         .catch(err => console.log('Error loading client secret file:', err));
 }
 
+function setCredentials(oAuth2Client, token) {
+    oAuth2Client.setCredentials(token);
+    return oAuth2Client;
+}
+
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
  * given callback function.
@@ -31,11 +36,12 @@ function authorize(credentials, callback) {
         client_id, client_secret, redirect_uris[0]);
 
     // Check if we have previously stored a token.
-    fs.readFile(TOKEN_PATH, (err, token) => {
-        if (err) return getNewToken(oAuth2Client, callback);
-        oAuth2Client.setCredentials(JSON.parse(token));
-        callback(oAuth2Client);
-    });
+    fs.readFileAsync(TOKEN_PATH)
+        .then(token => JSON.parse(token))
+        .then(token => {
+            callback(setCredentials(oAuth2Client, token));
+        })
+        .catch(() => getNewToken(oAuth2Client, callback));
 }
 
 /**
@@ -59,11 +65,12 @@ function getNewToken(oAuth2Client, callback) {
         oAuth2Client.getToken(code, (err, token) => {
             if (err) return console.error('Error while trying to retrieve access token', err);
             oAuth2Client.setCredentials(token);
+
             // Store the token to disk for later program executions
-            fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-                if (err) return console.error(err);
-                console.log('Token stored to', TOKEN_PATH);
-            });
+            fs.writeFileAsync(TOKEN_PATH, JSON.stringify(token))
+                .then(() => console.log('Token stored to', TOKEN_PATH))
+                .catch(console.error);
+
             callback(oAuth2Client);
         });
     });
@@ -89,7 +96,7 @@ function listMajors(auth) {
                     .reduce((a, b) => Object.assign(a, b), {}));
 
             console.log(rows);
-            console.log(table);
+            console.table(table);
         })
         .catch(err => console.log('The API returned an error: ' + err));
 }

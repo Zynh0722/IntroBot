@@ -6,6 +6,5 @@ const Promise = require('bluebird');
 
 const authorize = require('./auth');
 
-authorize();
 
-// module.exports = auth_and_read;
+module.exports = authorize;

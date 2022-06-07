@@ -51,6 +51,8 @@ function authorize(credentials, callback) {
  * @param {getEventsCallback} callback The callback for the authorized client.
  */
 function getNewToken(oAuth2Client, callback) {
+    const getToken = Promise.promisify(oAuth2Client.getToken.bind(oAuth2Client));
+
     const authUrl = oAuth2Client.generateAuthUrl({
         access_type: 'offline',
         scope: SCOPES,
@@ -62,17 +64,13 @@ function getNewToken(oAuth2Client, callback) {
     });
     rl.question('Enter the code from that page here: ', (code) => {
         rl.close();
-        oAuth2Client.getToken(code, (err, token) => {
-            if (err) return console.error('Error while trying to retrieve access token', err);
-            oAuth2Client.setCredentials(token);
 
-            // Store the token to disk for later program executions
-            fs.writeFileAsync(TOKEN_PATH, JSON.stringify(token))
+        getToken(code)
+            .tap(token => fs.writeFileAsync(TOKEN_PATH, JSON.stringify(token))
                 .then(() => console.log('Token stored to', TOKEN_PATH))
-                .catch(console.error);
-
-            callback(oAuth2Client);
-        });
+                .catch(console.error))
+            .then(token => callback(setCredentials(oAuth2Client, token)))
+            .catch(err => console.error('Error while trying to retrieve access token', err));
     });
 }
 

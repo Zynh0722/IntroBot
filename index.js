@@ -1,7 +1,7 @@
+require('dotenv').config();
+
 const { Client, Intents } = require('discord.js');
 const command_handlers = require('./commands/command-handlers');
-
-require('dotenv').config();
 
 // Create an instance of a Discord client
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS] });

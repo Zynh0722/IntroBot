@@ -51,7 +51,6 @@ function authorize(credentials, callback) {
  * @param {getEventsCallback} callback The callback for the authorized client.
  */
 function getNewToken(oAuth2Client, callback) {
-    const getToken = Promise.promisify(oAuth2Client.getToken.bind(oAuth2Client));
 
     const authUrl = oAuth2Client.generateAuthUrl({
         access_type: 'offline',
@@ -62,21 +61,24 @@ function getNewToken(oAuth2Client, callback) {
         input: process.stdin,
         output: process.stdout,
     });
-    rl.question('Enter the code from that page here: ', (code) => {
-        rl.close();
 
-        getToken(code)
-            .tap(token => fs.writeFileAsync(TOKEN_PATH, JSON.stringify(token))
-                .then(() => console.log('Token stored to', TOKEN_PATH))
-                .catch(console.error))
-            .then(token => callback(setCredentials(oAuth2Client, token)))
-            .catch(err => console.error('Error while trying to retrieve access token', err));
-    });
+    /* Creating promises */
+    const getToken = Promise.promisify(oAuth2Client.getToken.bind(oAuth2Client));
+    const question = (q) => new Promise(resolve => rl.question(q, resolve));
+
+    question('Enter the code from that page here: ')
+        .tap(() => rl.close())
+        .then(code => getToken(code))
+        .tap(token => fs.writeFileAsync(TOKEN_PATH, JSON.stringify(token))
+            .then(() => console.log('Token stored to', TOKEN_PATH))
+            .catch(console.error))
+        .then(token => callback(setCredentials(oAuth2Client, token)))
+        .catch(err => console.error('Error while trying to retrieve access token', err));
 }
 
 /**
  * Prints the names and majors of students in a sample spreadsheet:
- * @see https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+ * @see https://docs.google.com/spreadsheets/d/17JmKV_TeXaaCulegDvaLdOhmBYWPcOJa7uKcV6YOarE/edit
  * @param {google.auth.OAuth2} auth The authenticated Google OAuth client.
  */
 function listMajors(auth) {
@@ -93,7 +95,7 @@ function listMajors(auth) {
                 row.map((cell, index) => ({ [rows[0][index]]: cell }))
                     .reduce((a, b) => Object.assign(a, b), {}));
 
-            console.log(rows);
+            // console.log(rows);
             console.table(table);
         })
         .catch(err => console.log('The API returned an error: ' + err));
